@@ -43,6 +43,7 @@ public:
 	// ToDo: Add other methods (POST, HEAD, etc...)
 	void GetL(const TDesC8 &aUrl);
 	void SetUserAgentL(const TDesC8 &aDes);
+	void SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue); // For session
 	
 private:
 	// Enum

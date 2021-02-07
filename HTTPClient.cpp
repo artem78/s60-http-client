@@ -59,10 +59,15 @@ void CHTTPClient::SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField,
 	CleanupStack::PopAndDestroy(&valStr);
 	}
 
-void CHTTPClient::SetUserAgentL(const TDesC8 &aDes)
+void CHTTPClient::SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue)
 	{
 	RHTTPHeaders headers = iSession.RequestSessionHeadersL();
-	SetHeaderL(headers, HTTP::EUserAgent, aDes);
+	SetHeaderL(headers, aHdrField, aHdrValue);
+	}
+
+void CHTTPClient::SetUserAgentL(const TDesC8 &aDes)
+	{
+	SetHeaderL(HTTP::EUserAgent, aDes);
 	}
 
 void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
