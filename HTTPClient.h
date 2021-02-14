@@ -25,7 +25,6 @@ class MHTTPClientObserver;
  *  CHTTPClient
  * 
  */
-// ToDo: Allow to cancel ongoing request
 class CHTTPClient : public CBase
 	{
 	// Constructors and destructor
@@ -44,6 +43,9 @@ public:
 	void GetL(const TDesC8 &aUrl);
 	void SetUserAgentL(const TDesC8 &aDes);
 	void SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue); // For session
+	void CancelRequest();
+	inline TBool IsRequestActive()
+		{ return iIsRequestActive; };
 	
 private:
 	// Enum
@@ -55,9 +57,18 @@ private:
 	
 	RHTTPSession iSession;
 	MHTTPClientObserver* iObserver;
+	RHTTPTransaction iTransaction;
+	TBool iIsRequestActive;
 	
 	void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl);
 	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);
+	
+	// Friends
+	/*friend void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction,
+			const THTTPEvent& aEvent);
+	friend TInt MHTTPClientObserver::MHFRunError(TInt aError, RHTTPTransaction aTransaction,
+			const THTTPEvent& aEvent);*/
+	friend class MHTTPClientObserver;
 	};
 
 
@@ -73,6 +84,10 @@ private:
 			const THTTPEvent& aEvent);
 	
 	// Custom properties and methods
+private:
+	CHTTPClient* iHTTPClient;
+	void SetHTTPClient(CHTTPClient *aClient);
+	
 public:
 	virtual void OnHTTPResponseDataChunkRecieved(const RHTTPTransaction aTransaction,
 			const TDesC8 &aDataChunk, TInt anOverallDataSize, TBool anIsLastChunk) = 0;
@@ -80,6 +95,9 @@ public:
 	// @param aError Code of the last error. Equals to 0 if it is HTTP error (ex: 404 Not Found).
 	virtual void OnHTTPError(TInt aError, const RHTTPTransaction aTransaction) /*= 0*/;
 	virtual void OnHTTPHeadersRecieved(const RHTTPTransaction aTransaction) = 0;
+	
+	// Friends
+	friend class CHTTPClient;
 	};
 
 
