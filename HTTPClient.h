@@ -76,8 +76,6 @@ class MHTTPClientObserver : public MHTTPTransactionCallback
 	{
 	// Inherited from MHTTPTransactionCallback
 private:
-	TInt iLastError;
-	
 	virtual void MHFRunL(RHTTPTransaction aTransaction,
 			const THTTPEvent& aEvent);
 	virtual TInt MHFRunError(TInt aError, RHTTPTransaction aTransaction,
@@ -85,7 +83,9 @@ private:
 	
 	// Custom properties and methods
 private:
+	TInt iLastError;
 	CHTTPClient* iHTTPClient;
+	
 	void SetHTTPClient(CHTTPClient *aClient);
 	
 public:
