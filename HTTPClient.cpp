@@ -111,7 +111,7 @@ void CHTTPClient::CancelRequest()
 	{
 	if (IsRequestActive())
 		{
-		iObserver->OnHTTPError(KErrCancel, iTransaction);
+		iObserver->OnHTTPError(/*KErrCancel*/ KErrAbort, iTransaction);
 		//iTransaction.Cancel();
 		iTransaction.Close(); // Note: After this MHTTPClientObserver::MHFRunL won`t be called
 		iIsRequestActive = EFalse;
