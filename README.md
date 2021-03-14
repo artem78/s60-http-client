@@ -1,4 +1,4 @@
 # s60-http-client
-HTTP-client lib for Symbain OS
+HTTP-client lib for Symbian OS
 
 **ToDo: Write this**
