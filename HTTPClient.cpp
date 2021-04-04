@@ -38,10 +38,55 @@ CHTTPClient* CHTTPClient::NewL(MHTTPClientObserver* aObserver)
 	return self;
 	}
 
+CHTTPClient* CHTTPClient::NewLC(MHTTPClientObserver* aObserver,
+		RSocketServ& aSocketServer, RConnection& aConnection)
+	{
+	CHTTPClient* self = new (ELeave) CHTTPClient(aObserver);
+	CleanupStack::PushL(self);
+	self->ConstructWithSockServAndConnectionL(aSocketServer, aConnection);
+	return self;
+	}
+
+CHTTPClient* CHTTPClient::NewL(MHTTPClientObserver* aObserver,
+		RSocketServ& aSocketServer, RConnection& aConnection)
+	{
+	CHTTPClient* self = CHTTPClient::NewLC(aObserver, aSocketServer, aConnection);
+	CleanupStack::Pop(); // self;
+	return self;
+	}
+
 void CHTTPClient::ConstructL()
 	{
 	// Open http session with default protocol HTTP/TCP
 	iSession.OpenL();
+	}
+
+void CHTTPClient::ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer,
+		RConnection& aConnection)
+	{
+	//iSession.Close();
+	iSession.OpenL();
+	
+	RStringPool strPool = iSession.StringPool();
+	RHTTPConnectionInfo connInfo = iSession.ConnectionInfo();
+	
+	// Set Socket Server
+	connInfo.RemoveProperty(
+			strPool.StringF(HTTP::EHttpSocketServ, RHTTPSession::GetTable())
+	);
+	connInfo.SetPropertyL(
+			strPool.StringF(HTTP::EHttpSocketServ, RHTTPSession::GetTable()),
+			THTTPHdrVal(aSocketServer.Handle())
+	);
+	
+	// Set Connection
+	connInfo.RemoveProperty(
+			strPool.StringF(HTTP::EHttpSocketConnection, RHTTPSession::GetTable())
+	);
+	connInfo.SetPropertyL(
+			strPool.StringF(HTTP::EHttpSocketConnection, RHTTPSession::GetTable()),
+			THTTPHdrVal(reinterpret_cast<TInt>(&aConnection))
+	);
 	}
 
 void CHTTPClient::GetL(const TDesC8 &aUrl)

@@ -15,6 +15,7 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <http.h>
+#include <es_sock.h> // RSocketServ, RConnection
 
 // FORWARD DECLARATION
 class MHTTPClientObserver; 
@@ -32,10 +33,18 @@ public:
 	~CHTTPClient();
 	static CHTTPClient* NewL(MHTTPClientObserver* aObserver);
 	static CHTTPClient* NewLC(MHTTPClientObserver* aObserver);
+	
+	// Constructors with custom socket server and connection
+	static CHTTPClient* NewL(MHTTPClientObserver* aObserver,
+			RSocketServ& aSocketServer, RConnection& aConnection);
+	static CHTTPClient* NewLC(MHTTPClientObserver* aObserver,
+			RSocketServ& aSocketServer, RConnection& aConnection);
 
 private:
 	CHTTPClient(MHTTPClientObserver* aObserver);
 	void ConstructL();
+	void ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer,
+			RConnection& aConnection);
 	
 	// Custom properties and methods
 public:
