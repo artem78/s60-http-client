@@ -20,6 +20,7 @@ CHTTPClient::CHTTPClient(MHTTPClientObserver* aObserver) :
 CHTTPClient::~CHTTPClient()
 	{
 	//CancelRequest(); // Not neccesary
+	iFakeSession.Close();
 	iSession.Close();
 	}
 
@@ -59,6 +60,7 @@ void CHTTPClient::ConstructL()
 	{
 	// Open http session with default protocol HTTP/TCP
 	iSession.OpenL();
+	iFakeSession.OpenL();
 	}
 
 void CHTTPClient::ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer,
@@ -66,6 +68,7 @@ void CHTTPClient::ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer
 	{
 	//iSession.Close();
 	iSession.OpenL();
+	iFakeSession.OpenL();
 	
 	RStringPool strPool = iSession.StringPool();
 	RHTTPConnectionInfo connInfo = iSession.ConnectionInfo();
@@ -89,9 +92,9 @@ void CHTTPClient::ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer
 	);
 	}
 
-void CHTTPClient::GetL(const TDesC8 &aUrl)
+void CHTTPClient::GetL(const TDesC8 &aUrl/*, RHTTPHeaders* aHdrs*/)
 	{
-	SendRequestL(/*THTTPMethod::*/EGet, aUrl);
+	SendRequestL(/*THTTPMethod::*/EGet, aUrl/*, aHdrs*/);
 	}
 
 void CHTTPClient::SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField,
@@ -117,7 +120,7 @@ void CHTTPClient::SetUserAgentL(const TDesC8 &aDes)
 	SetHeaderL(HTTP::EUserAgent, aDes);
 	}
 
-void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
+void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl/*, RHTTPHeaders* aHdrs*/)
 	{
 	// Method
 	TInt method;
@@ -145,9 +148,31 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
 	TInt r = uri.Parse(aUrl);
 	User::LeaveIfError(r);
 
-	// Prepare and submit transaction
+	// Prepare transaction
 	CancelRequest(); // Cancel previous transation if opened
 	iTransaction = iSession.OpenTransactionL(uri, *iObserver, methodStr);
+	
+	// Add headers to prepared request
+	RHTTPHeaders requestHdrs = iTransaction.Request().GetHeaderCollection();
+	RHTTPHeaders requestHdrsSrc = iFakeSession.RequestSessionHeadersL();
+	RStringPool strPoolSrc = iFakeSession.StringPool();
+	THTTPHdrFieldIter fieldsIter = requestHdrsSrc.Fields();
+	fieldsIter.First();
+	while (!fieldsIter.AtEnd())
+		{
+		//RStringTokenF fieldName = fieldsIter();
+		RStringF fieldName = strPoolSrc.StringF(fieldsIter());
+		THTTPHdrVal fieldVal;
+		if (requestHdrsSrc.GetField(fieldName, 0, fieldVal) == KErrNone)
+			{
+			requestHdrs.SetFieldL(fieldName, fieldVal);
+			}
+		
+		++fieldsIter;
+		}
+	requestHdrsSrc.RemoveAllFields(); // Remove all headers to prepare for next request
+	
+	// Submit transaction
 	iTransaction.SubmitL();
 	iIsRequestActive = ETrue;
 	}
