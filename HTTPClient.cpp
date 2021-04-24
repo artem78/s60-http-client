@@ -20,7 +20,7 @@ CHTTPClient::CHTTPClient(MHTTPClientObserver* aObserver) :
 CHTTPClient::~CHTTPClient()
 	{
 	//CancelRequest(); // Not neccesary
-	iFakeSession.Close();
+	iTempSession.Close();
 	iSession.Close();
 	}
 
@@ -60,7 +60,7 @@ void CHTTPClient::ConstructL()
 	{
 	// Open http session with default protocol HTTP/TCP
 	iSession.OpenL();
-	iFakeSession.OpenL();
+	iTempSession.OpenL();
 	}
 
 void CHTTPClient::ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer,
@@ -68,7 +68,7 @@ void CHTTPClient::ConstructWithSockServAndConnectionL(RSocketServ& aSocketServer
 	{
 	//iSession.Close();
 	iSession.OpenL();
-	iFakeSession.OpenL();
+	iTempSession.OpenL();
 	
 	RStringPool strPool = iSession.StringPool();
 	RHTTPConnectionInfo connInfo = iSession.ConnectionInfo();
@@ -154,8 +154,8 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl/*, RHTTPH
 	
 	// Add headers to prepared request
 	RHTTPHeaders requestHdrs = iTransaction.Request().GetHeaderCollection();
-	RHTTPHeaders requestHdrsSrc = iFakeSession.RequestSessionHeadersL();
-	RStringPool strPoolSrc = iFakeSession.StringPool();
+	RHTTPHeaders requestHdrsSrc = iTempSession.RequestSessionHeadersL();
+	RStringPool strPoolSrc = iTempSession.StringPool();
 	THTTPHdrFieldIter fieldsIter = requestHdrsSrc.Fields();
 	fieldsIter.First();
 	while (!fieldsIter.AtEnd())

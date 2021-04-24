@@ -52,11 +52,12 @@ public:
 	void GetL(const TDesC8 &aUrl/*, RHTTPHeaders* aHdrs = NULL*/);
 	void SetUserAgentL(const TDesC8 &aDes);
 	void SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue); // For session
+	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue); // For provided headers object
 	void CancelRequest();
 	inline TBool IsRequestActive()
 		{ return iIsRequestActive; };
 	inline RHTTPHeaders GetRequestHeadersL()
-		{ return iFakeSession.RequestSessionHeadersL(); };
+		{ return iTempSession.RequestSessionHeadersL(); };
 	
 private:
 	// Enum
@@ -67,17 +68,13 @@ private:
 		};
 	
 	RHTTPSession iSession;
-	RHTTPSession iFakeSession; // Used only for temporary store http headers for next request
+	RHTTPSession iTempSession; // Used only for temporary store http headers for next request
 	MHTTPClientObserver* iObserver;
 	RHTTPTransaction iTransaction;
 	TBool iIsRequestActive;
 	
 	void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl/*, RHTTPHeaders* aHdrs = NULL*/);
 
-public:
-	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);
-	
-private:
 	// Friends
 	/*friend void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction,
 			const THTTPEvent& aEvent);
