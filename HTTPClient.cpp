@@ -104,7 +104,7 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
 	User::LeaveIfError(r);
 
 	// Prepare and submit transaction
-	CancelRequest(); // Cancel previous transation if opened
+	CancelRequest(); // Cancel previous transaction if opened
 	iTransaction = iSession.OpenTransactionL(uri, *iObserver, methodStr);
 	DEBUG(_L("Transaction #%d created"), iTransaction.Id());
 	iTransaction.SubmitL();
