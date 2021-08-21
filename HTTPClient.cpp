@@ -9,6 +9,7 @@
  */
 
 #include "HTTPClient.h"
+#include "Logger.h"
 
 CHTTPClient::CHTTPClient(MHTTPClientObserver* aObserver) :
 		iObserver(aObserver),
@@ -21,6 +22,7 @@ CHTTPClient::~CHTTPClient()
 	{
 	//CancelRequest(); // Not neccesary
 	iSession.Close();
+	DEBUG(_L("Session closed"));
 	}
 
 CHTTPClient* CHTTPClient::NewLC(MHTTPClientObserver* aObserver)
@@ -42,6 +44,7 @@ void CHTTPClient::ConstructL()
 	{
 	// Open http session with default protocol HTTP/TCP
 	iSession.OpenL();
+	DEBUG(_L("Session opened"));
 	}
 
 void CHTTPClient::GetL(const TDesC8 &aUrl)
@@ -103,18 +106,22 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
 	// Prepare and submit transaction
 	CancelRequest(); // Cancel previous transation if opened
 	iTransaction = iSession.OpenTransactionL(uri, *iObserver, methodStr);
+	DEBUG(_L("Transaction #%d created"), iTransaction.Id());
 	iTransaction.SubmitL();
 	iIsRequestActive = ETrue;
+	DEBUG(_L("Request started"));
 	}
 
 void CHTTPClient::CancelRequest()
 	{
 	if (IsRequestActive())
 		{
+		DEBUG(_L("Request is cancelling"));
 		iObserver->OnHTTPError(/*KErrCancel*/ KErrAbort, iTransaction);
 		//iTransaction.Cancel();
 		CloseOwnTransaction(); // Note: After this MHTTPClientObserver::MHFRunL won`t be called
 		iIsRequestActive = EFalse;
+		DEBUG(_L("Request cancelled"));
 		}
 	}
 
@@ -125,11 +132,15 @@ void CHTTPClient::CloseOwnTransaction()
 
 void CHTTPClient::CloseTransaction(RHTTPTransaction &aTransaction)
 	{
+	TInt transactionId = aTransaction.Id();
+	DEBUG(_L("Transaction #%d is closing"), transactionId);
 	aTransaction.Close();
+	DEBUG(_L("Transaction #%d closed"), transactionId);
 	}
 
 void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent &aEvent)
 	{
+	DEBUG(_L("Transaction #%d event status: %d"), aTransaction.Id(), aEvent.iStatus);
 	switch (aEvent.iStatus)
 		{
 		case THTTPEvent::EGotResponseHeaders:
@@ -205,8 +216,9 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 	}
 
 TInt MHTTPClientObserver::MHFRunError(TInt /*aError*/, RHTTPTransaction aTransaction,
-		const THTTPEvent& /*aEvent*/)
+		const THTTPEvent& aEvent)
 	{
+	DEBUG(_L("Transaction #%d event status: %d"), aTransaction.Id(), aEvent.iStatus);
 	// Cleanup any resources in case MHFRunL() leaves
 	CHTTPClient::CloseTransaction(aTransaction);
 	iHTTPClient->iIsRequestActive = EFalse;
