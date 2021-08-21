@@ -22,7 +22,10 @@ class MHTTPClientObserver;
 // CLASS DECLARATION
 
 /**
- *  CHTTPClient
+ *  CHTTPClient - high-level class for making HTTP-requests.
+ *  
+ *  Note: Do not make new request from OnHTTPResponse or OnHTTPError
+ *  callbacks. This will cause panic. (FixMe)
  * 
  */
 class CHTTPClient : public CBase
@@ -64,6 +67,7 @@ private:
 	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);
 	void CloseOwnTransaction();
 	void CloseTransaction(RHTTPTransaction &aTransaction);
+	TBool IsTransactionOpened(RHTTPTransaction &aTransaction);
 	
 	// Friends
 	/*friend void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction,
