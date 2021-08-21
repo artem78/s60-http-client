@@ -63,7 +63,7 @@ private:
 	void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl);
 	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);
 	void CloseOwnTransaction();
-	static void CloseTransaction(RHTTPTransaction &aTransaction);
+	void CloseTransaction(RHTTPTransaction &aTransaction);
 	
 	// Friends
 	/*friend void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction,

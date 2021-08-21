@@ -174,7 +174,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 		case THTTPEvent::ESucceeded:
 			{
 			OnHTTPResponse(aTransaction);
-			CHTTPClient::CloseTransaction(aTransaction);
+			iHTTPClient->CloseTransaction(aTransaction);
 			iHTTPClient->iIsRequestActive = EFalse;
 			} 
 			break;
@@ -183,7 +183,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			{
 			OnHTTPError(iLastError, aTransaction);
 			iLastError = 0; // Reset last error code
-			CHTTPClient::CloseTransaction(aTransaction);
+			iHTTPClient->CloseTransaction(aTransaction);
 			iHTTPClient->iIsRequestActive = EFalse;
 			} 
 			break;
@@ -220,7 +220,7 @@ TInt MHTTPClientObserver::MHFRunError(TInt /*aError*/, RHTTPTransaction aTransac
 	{
 	DEBUG(_L("Transaction #%d event status: %d"), aTransaction.Id(), aEvent.iStatus);
 	// Cleanup any resources in case MHFRunL() leaves
-	CHTTPClient::CloseTransaction(aTransaction);
+	iHTTPClient->CloseTransaction(aTransaction);
 	iHTTPClient->iIsRequestActive = EFalse;
 	
 	return KErrNone;
