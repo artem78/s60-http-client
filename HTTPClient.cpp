@@ -113,9 +113,19 @@ void CHTTPClient::CancelRequest()
 		{
 		iObserver->OnHTTPError(/*KErrCancel*/ KErrAbort, iTransaction);
 		//iTransaction.Cancel();
-		iTransaction.Close(); // Note: After this MHTTPClientObserver::MHFRunL won`t be called
+		CloseOwnTransaction(); // Note: After this MHTTPClientObserver::MHFRunL won`t be called
 		iIsRequestActive = EFalse;
 		}
+	}
+
+void CHTTPClient::CloseOwnTransaction()
+	{
+	CloseTransaction(iTransaction);
+	}
+
+void CHTTPClient::CloseTransaction(RHTTPTransaction &aTransaction)
+	{
+	aTransaction.Close();
 	}
 
 void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent &aEvent)
@@ -145,7 +155,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			
 		case THTTPEvent::EResponseComplete:
 			{
-			//aTransaction.Close();
+			//CloseTransaction(aTransaction);
 			//OnHTTPResponse(aTransaction);
 			} 
 			break;
@@ -153,7 +163,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 		case THTTPEvent::ESucceeded:
 			{
 			OnHTTPResponse(aTransaction);
-			aTransaction.Close();
+			CHTTPClient::CloseTransaction(aTransaction);
 			iHTTPClient->iIsRequestActive = EFalse;
 			} 
 			break;
@@ -162,7 +172,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			{
 			OnHTTPError(iLastError, aTransaction);
 			iLastError = 0; // Reset last error code
-			aTransaction.Close();
+			CHTTPClient::CloseTransaction(aTransaction);
 			iHTTPClient->iIsRequestActive = EFalse;
 			} 
 			break;
@@ -180,9 +190,9 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			if (aEvent.iStatus < 0) // Any error
 				{
 				//OnHTTPError(aEvent.iStatus, aTransaction);
-				// aTransaction.Close() not needed because THTTPEvent::EFailed will
+				// Closing transaction not needed because THTTPEvent::EFailed will
 				// be sent at final
-				//aTransaction.Close();
+				//CloseTransaction(aTransaction);
 				//iHTTPClient->iIsRequestActive = EFalse;
 				}
 			else // Any warning
@@ -198,7 +208,7 @@ TInt MHTTPClientObserver::MHFRunError(TInt /*aError*/, RHTTPTransaction aTransac
 		const THTTPEvent& /*aEvent*/)
 	{
 	// Cleanup any resources in case MHFRunL() leaves
-	aTransaction.Close();
+	CHTTPClient::CloseTransaction(aTransaction);
 	iHTTPClient->iIsRequestActive = EFalse;
 	
 	return KErrNone;
