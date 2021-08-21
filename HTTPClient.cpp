@@ -131,11 +131,14 @@ void CHTTPClient::CloseOwnTransaction()
 
 void CHTTPClient::CloseTransaction(RHTTPTransaction &aTransaction)
 	{
-	TInt transactionId = aTransaction.Id();
-	DEBUG(_L("Transaction #%d is closing"), transactionId);
-	aTransaction.Close();
-	iIsRequestActive = EFalse;
-	DEBUG(_L("Transaction #%d closed"), transactionId);
+	if (IsRequestActive())
+		{
+		TInt transactionId = aTransaction.Id();
+		DEBUG(_L("Transaction #%d is closing"), transactionId);
+		aTransaction.Close();
+		iIsRequestActive = EFalse;
+		DEBUG(_L("Transaction #%d closed"), transactionId);
+		}
 	}
 
 void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEvent &aEvent)
