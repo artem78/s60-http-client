@@ -107,6 +107,7 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
 	CancelRequest(); // Cancel previous transaction if opened
 	iTransaction = iSession.OpenTransactionL(uri, *iObserver, methodStr);
 	DEBUG(_L("Transaction #%d created"), iTransaction.Id());
+	iObserver->iLastError = KErrNone;
 	iTransaction.SubmitL();
 	iIsRequestActive = ETrue;
 	DEBUG(_L("Request started"));
@@ -131,7 +132,7 @@ void CHTTPClient::CloseOwnTransaction()
 
 void CHTTPClient::CloseTransaction(RHTTPTransaction &aTransaction)
 	{
-	if (IsRequestActive())
+	if (IsRequestActive()) // ToDo: How to make __REAL__ check if transation is still alive?
 		{
 		TInt transactionId = aTransaction.Id();
 		DEBUG(_L("Transaction #%d is closing"), transactionId);
@@ -177,7 +178,8 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 		case THTTPEvent::ESucceeded:
 			{
 			OnHTTPResponse(aTransaction);
-			iHTTPClient->CloseTransaction(aTransaction);
+			//iHTTPClient->CloseTransaction(aTransaction);
+			iHTTPClient->CloseOwnTransaction();
 			} 
 			break;
 			
@@ -185,7 +187,8 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			{
 			OnHTTPError(iLastError, aTransaction);
 			iLastError = 0; // Reset last error code
-			iHTTPClient->CloseTransaction(aTransaction);
+			//iHTTPClient->CloseTransaction(aTransaction);
+			iHTTPClient->CloseOwnTransaction();
 			} 
 			break;
 			
