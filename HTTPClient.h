@@ -49,8 +49,8 @@ public:
 	void CancelRequest();
 	inline TBool IsRequestActive()
 		{ return iIsRequestActive; };
-	
-private:
+
+protected:
 	// Enum
 	enum THTTPMethod
 		{
@@ -63,7 +63,7 @@ private:
 	RHTTPTransaction iTransaction;
 	TBool iIsRequestActive;
 	
-	void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl);
+	virtual void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl);
 	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);
 	void CloseOwnTransaction();
 	void CloseTransaction(RHTTPTransaction &aTransaction);
