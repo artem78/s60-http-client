@@ -36,7 +36,7 @@ public:
 	static CHTTPClient* NewL(MHTTPClientObserver* aObserver);
 	static CHTTPClient* NewLC(MHTTPClientObserver* aObserver);
 
-private:
+protected:
 	CHTTPClient(MHTTPClientObserver* aObserver);
 	void ConstructL();
 	
