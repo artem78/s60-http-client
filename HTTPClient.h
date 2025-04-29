@@ -46,6 +46,7 @@ public:
 	void GetL(const TDesC8 &aUrl, MHTTPClientObserver* aObserver = NULL);
 	void SetUserAgentL(const TDesC8 &aDes);
 	void SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue); // For session
+	void SetRequestHeaderL(TInt aHdrField, const TDesC8 &aHdrValue); // For next request only
 	void CancelRequest();
 	inline TBool IsRequestActive()
 		{ return iIsRequestActive; };
@@ -62,6 +63,7 @@ protected:
 	MHTTPClientObserver* iObserver;
 	RHTTPTransaction iTransaction;
 	TBool iIsRequestActive;
+	RHTTPSession iTempSession; // Used only for temporary storage headers before next request
 	
 	virtual void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl, MHTTPClientObserver* aObserver);
 	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);

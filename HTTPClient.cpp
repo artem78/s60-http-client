@@ -23,6 +23,7 @@ CHTTPClient::CHTTPClient(MHTTPClientObserver* aObserver) :
 
 CHTTPClient::~CHTTPClient()
 	{
+	iTempSession.Close();
 	//CancelRequest(); // Not neccesary
 	iSession.Close();
 	DEBUG(_L("Session closed"));
@@ -48,6 +49,7 @@ void CHTTPClient::ConstructL()
 	// Open http session with default protocol HTTP/TCP
 	iSession.OpenL();
 	DEBUG(_L("Session opened"));
+	iTempSession.OpenL();
 	}
 
 void CHTTPClient::GetL(const TDesC8 &aUrl, MHTTPClientObserver* aObserver)
@@ -71,6 +73,11 @@ void CHTTPClient::SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue)
 	{
 	RHTTPHeaders headers = iSession.RequestSessionHeadersL();
 	SetHeaderL(headers, aHdrField, aHdrValue);
+	}
+
+void CHTTPClient::SetRequestHeaderL(TInt aHdrField, const TDesC8 &aHdrValue)
+	{
+	SetHeaderL(iTempSession.RequestSessionHeadersL(), aHdrField, aHdrValue);
 	}
 
 void CHTTPClient::SetUserAgentL(const TDesC8 &aDes)
@@ -113,11 +120,33 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl, MHTTPCli
 	TInt r = uri.Parse(aUrl);
 	User::LeaveIfError(r);
 
-	// Prepare and submit transaction
+	// Prepare transaction
 	CancelRequest(); // Cancel previous transaction if opened
 	iTransaction = iSession.OpenTransactionL(uri, *(static_cast<MHTTPTransactionCallback*>(observer)), methodStr);
 	DEBUG(_L("Transaction #%d created"), iTransaction.Id());
 	observer->iLastError = KErrNone;
+	
+	// Add headers to prepared request
+	RHTTPHeaders requestHdrs = iTransaction.Request().GetHeaderCollection();
+	RHTTPHeaders requestHdrsSrc = iTempSession.RequestSessionHeadersL();
+	RStringPool strPoolSrc = iTempSession.StringPool();
+	THTTPHdrFieldIter fieldsIter = requestHdrsSrc.Fields();
+	fieldsIter.First();
+	while (!fieldsIter.AtEnd())
+		{
+		//RStringTokenF fieldName = fieldsIter();
+		RStringF fieldName = strPoolSrc.StringF(fieldsIter());
+		THTTPHdrVal fieldVal;
+		if (requestHdrsSrc.GetField(fieldName, 0, fieldVal) == KErrNone)
+			{
+			requestHdrs.SetFieldL(fieldName, fieldVal);
+			}
+
+		++fieldsIter;
+		}
+	requestHdrsSrc.RemoveAllFields(); // Remove all headers to prepare for next request
+
+	// Submit transaction
 	iTransaction.SubmitL();
 	iIsRequestActive = ETrue;
 	DEBUG(_L("Request started"));
