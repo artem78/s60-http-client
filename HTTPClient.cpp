@@ -15,7 +15,10 @@ CHTTPClient::CHTTPClient(MHTTPClientObserver* aObserver) :
 		iObserver(aObserver),
 		iIsRequestActive(EFalse)
 	{
-	iObserver->SetHTTPClient(this);
+	if (iObserver)
+		{
+		iObserver->SetHTTPClient(this);
+		}
 	}
 
 CHTTPClient::~CHTTPClient()
@@ -47,9 +50,9 @@ void CHTTPClient::ConstructL()
 	DEBUG(_L("Session opened"));
 	}
 
-void CHTTPClient::GetL(const TDesC8 &aUrl)
+void CHTTPClient::GetL(const TDesC8 &aUrl, MHTTPClientObserver* aObserver)
 	{
-	SendRequestL(/*THTTPMethod::*/EGet, aUrl);
+	SendRequestL(/*THTTPMethod::*/EGet, aUrl, aObserver);
 	}
 
 void CHTTPClient::SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField,
@@ -75,8 +78,15 @@ void CHTTPClient::SetUserAgentL(const TDesC8 &aDes)
 	SetHeaderL(HTTP::EUserAgent, aDes);
 	}
 
-void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
+void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl, MHTTPClientObserver* aObserver)
 	{
+	//__ASSERT_DEBUG(iObserver || aObserver, User::Panic(...));
+	if (aObserver)
+		{
+		aObserver->SetHTTPClient(this);
+		}
+	MHTTPClientObserver* observer = aObserver ? aObserver : iObserver;
+	
 	// Method
 	TInt method;
 	switch (aMethod)
@@ -105,9 +115,9 @@ void CHTTPClient::SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl)
 
 	// Prepare and submit transaction
 	CancelRequest(); // Cancel previous transaction if opened
-	iTransaction = iSession.OpenTransactionL(uri, *iObserver, methodStr);
+	iTransaction = iSession.OpenTransactionL(uri, *(static_cast<MHTTPTransactionCallback*>(observer)), methodStr);
 	DEBUG(_L("Transaction #%d created"), iTransaction.Id());
-	iObserver->iLastError = KErrNone;
+	observer->iLastError = KErrNone;
 	iTransaction.SubmitL();
 	iIsRequestActive = ETrue;
 	DEBUG(_L("Request started"));

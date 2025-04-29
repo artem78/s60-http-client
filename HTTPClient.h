@@ -17,7 +17,7 @@
 #include <http.h>
 
 // FORWARD DECLARATION
-class MHTTPClientObserver; 
+class MHTTPClientObserver;
 
 // CLASS DECLARATION
 
@@ -33,8 +33,8 @@ class CHTTPClient : public CBase
 	// Constructors and destructor
 public:
 	~CHTTPClient();
-	static CHTTPClient* NewL(MHTTPClientObserver* aObserver);
-	static CHTTPClient* NewLC(MHTTPClientObserver* aObserver);
+	static CHTTPClient* NewL(MHTTPClientObserver* aObserver = NULL);
+	static CHTTPClient* NewLC(MHTTPClientObserver* aObserver = NULL);
 
 protected:
 	CHTTPClient(MHTTPClientObserver* aObserver);
@@ -43,7 +43,7 @@ protected:
 	// Custom properties and methods
 public:
 	// ToDo: Add other methods (POST, HEAD, etc...)
-	void GetL(const TDesC8 &aUrl);
+	void GetL(const TDesC8 &aUrl, MHTTPClientObserver* aObserver = NULL);
 	void SetUserAgentL(const TDesC8 &aDes);
 	void SetHeaderL(TInt aHdrField, const TDesC8 &aHdrValue); // For session
 	void CancelRequest();
@@ -63,7 +63,7 @@ protected:
 	RHTTPTransaction iTransaction;
 	TBool iIsRequestActive;
 	
-	virtual void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl);
+	virtual void SendRequestL(THTTPMethod aMethod, const TDesC8 &aUrl, MHTTPClientObserver* aObserver);
 	void SetHeaderL(RHTTPHeaders aHeaders, TInt aHdrField, const TDesC8 &aHdrValue);
 	void CloseOwnTransaction();
 	void CloseTransaction(RHTTPTransaction &aTransaction);
