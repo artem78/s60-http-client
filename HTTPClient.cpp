@@ -157,9 +157,10 @@ void CHTTPClient::CancelRequest()
 	if (IsRequestActive())
 		{
 		DEBUG(_L("Request is cancelling"));
-		iObserver->OnHTTPError(/*KErrCancel*/ KErrAbort, iTransaction);
-		//iTransaction.Cancel();
-		CloseOwnTransaction(); // Note: After this MHTTPClientObserver::MHFRunL won`t be called
+//		iObserver->OnHTTPError(/*KErrCancel*/ KErrAbort, iTransaction);
+//		//iTransaction.Cancel();
+//		CloseOwnTransaction(); // Note: After this MHTTPClientObserver::MHFRunL won`t be called
+		iTransaction.Cancel();
 		DEBUG(_L("Request cancelled"));
 		}
 	}
@@ -230,6 +231,14 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			iHTTPClient->CloseOwnTransaction();
 			} 
 			break;
+			
+		case THTTPEvent::ECancel:
+			{
+			OnHTTPError(KErrCancel, aTransaction);
+			iLastError = 0;
+			iHTTPClient->CloseOwnTransaction();
+			break;
+			}
 			
 		case THTTPEvent::ERedirectedPermanently:
 			break;
