@@ -102,6 +102,15 @@ public:
 	virtual void OnHTTPError(TInt aError, const RHTTPTransaction aTransaction) /*= 0*/;
 	virtual void OnHTTPHeadersRecieved(const RHTTPTransaction aTransaction) = 0;
 	
+	/* 
+	 * Will be called after each pair of response and request completed (regardless of
+	 * success or not). It may be used for sending next request (do not use OnHTTPResponse
+	 * for this!).
+	 * 
+	 * @param aSuccess ETrue if request and response ended without any errors.
+	 */
+	virtual void OnHTTPResponseFinished(TBool aSuccess);
+	
 	// Friends
 	friend class CHTTPClient;
 	};

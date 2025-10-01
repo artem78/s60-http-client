@@ -180,6 +180,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			OnHTTPResponse(aTransaction);
 			//iHTTPClient->CloseTransaction(aTransaction);
 			iHTTPClient->CloseOwnTransaction();
+			OnHTTPResponseFinished(ETrue);
 			} 
 			break;
 			
@@ -189,6 +190,7 @@ void MHTTPClientObserver::MHFRunL(RHTTPTransaction aTransaction, const THTTPEven
 			iLastError = 0; // Reset last error code
 			//iHTTPClient->CloseTransaction(aTransaction);
 			iHTTPClient->CloseOwnTransaction();
+			OnHTTPResponseFinished(EFalse);
 			} 
 			break;
 			
@@ -239,4 +241,9 @@ void MHTTPClientObserver::OnHTTPError(TInt /*aError*/, RHTTPTransaction /*aTrans
 void MHTTPClientObserver::SetHTTPClient(CHTTPClient *aClient)
 	{
 	iHTTPClient = aClient;
+	}
+
+void MHTTPClientObserver::OnHTTPResponseFinished(TBool /*aSuccess*/)
+	{
+	//empty
 	}
